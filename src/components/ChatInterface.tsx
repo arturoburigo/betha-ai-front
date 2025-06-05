@@ -20,27 +20,90 @@ interface Chat {
   messages: Message[];
 }
 
+const STORAGE_KEY = 'chat-history';
+
 const ChatInterface: React.FC = () => {
-  const [chats, setChats] = useState<Chat[]>([
-    {
-      id: '1',
-      title: 'Conversa de exemplo',
-      lastMessage: 'Olá! Como posso ajudar?',
-      timestamp: new Date(),
-      messages: [
-        {
-          id: '1',
-          content: 'Olá! Como posso ajudar você hoje?',
-          sender: 'assistant',
-          timestamp: new Date(),
-        }
-      ]
-    }
-  ]);
-  
-  const [activeChat, setActiveChat] = useState<string>('1');
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [activeChat, setActiveChat] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Carregar dados do localStorage na inicialização
+  useEffect(() => {
+    const loadChatHistory = () => {
+      try {
+        const savedChats = localStorage.getItem(STORAGE_KEY);
+        if (savedChats) {
+          const parsedChats = JSON.parse(savedChats);
+          // Converter strings de timestamp de volta para objetos Date
+          const chatsWithDates = parsedChats.map((chat: any) => ({
+            ...chat,
+            timestamp: new Date(chat.timestamp),
+            messages: chat.messages.map((message: any) => ({
+              ...message,
+              timestamp: new Date(message.timestamp)
+            }))
+          }));
+          setChats(chatsWithDates);
+          
+          // Definir o primeiro chat como ativo se existir
+          if (chatsWithDates.length > 0) {
+            setActiveChat(chatsWithDates[0].id);
+          }
+        } else {
+          // Criar chat inicial se não houver histórico
+          const initialChat: Chat = {
+            id: '1',
+            title: 'Conversa de exemplo',
+            lastMessage: 'Olá! Como posso ajudar?',
+            timestamp: new Date(),
+            messages: [
+              {
+                id: '1',
+                content: 'Olá! Como posso ajudar você hoje?',
+                sender: 'assistant',
+                timestamp: new Date(),
+              }
+            ]
+          };
+          setChats([initialChat]);
+          setActiveChat('1');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar histórico do chat:', error);
+        // Em caso de erro, criar chat inicial
+        const initialChat: Chat = {
+          id: '1',
+          title: 'Conversa de exemplo',
+          lastMessage: 'Olá! Como posso ajudar?',
+          timestamp: new Date(),
+          messages: [
+            {
+              id: '1',
+              content: 'Olá! Como posso ajudar você hoje?',
+              sender: 'assistant',
+              timestamp: new Date(),
+            }
+          ]
+        };
+        setChats([initialChat]);
+        setActiveChat('1');
+      }
+    };
+
+    loadChatHistory();
+  }, []);
+
+  // Salvar no localStorage sempre que chats mudarem
+  useEffect(() => {
+    if (chats.length > 0) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+      } catch (error) {
+        console.error('Erro ao salvar histórico do chat:', error);
+      }
+    }
+  }, [chats]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
