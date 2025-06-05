@@ -1,9 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import Header from './Header';
 import ChatSidebar from './ChatSidebar';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
+import { apiService } from '../services/apiService';
+import { formatCodeBlocks } from '../utils/codeFormatter';
 
 interface Message {
   id: string;
@@ -118,19 +119,19 @@ const ChatInterface: React.FC = () => {
     return chats.find(chat => chat.id === activeChat);
   };
 
-  const simulateAssistantResponse = async (userMessage: string): Promise<string> => {
-    // Simula diferentes tipos de resposta baseado na mensagem
-    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
-    
-    const responses = [
-      "Entendo sua pergunta. Vou ajudar você com isso da melhor forma possível!",
-      "Essa é uma questão interessante. Deixe-me explicar de forma detalhada...",
-      "Posso ajudar com isso! Aqui está uma resposta abrangente para sua dúvida.",
-      "Ótima pergunta! Vou fornecer algumas informações úteis sobre esse tópico.",
-      "Claro! Aqui está o que posso te dizer sobre isso..."
-    ];
-    
-    return responses[Math.floor(Math.random() * responses.length)];
+  const generateAssistantResponse = async (userMessage: string): Promise<string> => {
+    try {
+      console.log('Enviando pergunta para a API:', userMessage);
+      const response = await apiService.generateResponse(userMessage);
+      console.log('Resposta recebida da API:', response);
+      
+      // Formatar blocos de código na resposta
+      const formattedResponse = formatCodeBlocks(response);
+      return formattedResponse;
+    } catch (error) {
+      console.error('Erro ao obter resposta da API:', error);
+      return 'Desculpe, ocorreu um erro ao processar sua pergunta. Verifique se a API está rodando e tente novamente.';
+    }
   };
 
   const handleSendMessage = async (content: string) => {
@@ -168,7 +169,7 @@ const ChatInterface: React.FC = () => {
     );
 
     try {
-      const assistantResponse = await simulateAssistantResponse(content);
+      const assistantResponse = await generateAssistantResponse(content);
       
       const assistantMessage: Message = {
         id: Date.now().toString(),
@@ -184,7 +185,7 @@ const ChatInterface: React.FC = () => {
             ? {
                 ...chat,
                 messages: [...chat.messages.filter(m => !m.isLoading), assistantMessage],
-                lastMessage: assistantResponse,
+                lastMessage: assistantResponse.substring(0, 50) + '...',
               }
             : chat
         )

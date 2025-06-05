@@ -17,6 +17,39 @@ interface ChatMessageProps {
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   const isUser = message.sender === 'user';
   
+  const renderContent = (content: string) => {
+    // Dividir o conteúdo em partes: texto normal e blocos de código
+    const parts = content.split(/(```[\s\S]*?```)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('```') && part.endsWith('```')) {
+        // É um bloco de código
+        const codeContent = part.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '');
+        const language = part.match(/^```(\w+)/)?.[1] || 'groovy';
+        
+        return (
+          <div key={index} className="my-3">
+            <div className="bg-gray-900 rounded-lg overflow-hidden">
+              <div className="bg-gray-800 px-3 py-2 text-xs text-gray-300 font-medium">
+                {language}
+              </div>
+              <pre className="p-4 text-sm text-gray-100 overflow-x-auto">
+                <code className={`language-${language}`}>{codeContent}</code>
+              </pre>
+            </div>
+          </div>
+        );
+      } else {
+        // É texto normal
+        return (
+          <span key={index} className="whitespace-pre-wrap">
+            {part}
+          </span>
+        );
+      }
+    });
+  };
+  
   return (
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
       <div className={`max-w-3xl w-full ${isUser ? 'pl-12' : 'pr-12'}`}>
@@ -38,7 +71,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                 </div>
               </div>
             ) : (
-              <div className="whitespace-pre-wrap">{message.content}</div>
+              <div>{renderContent(message.content)}</div>
             )}
           </div>
         </div>
