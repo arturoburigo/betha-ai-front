@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Chat {
@@ -24,13 +24,14 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onNewChat 
 }) => {
   return (
-    <div className="w-64 bg-gray-900 text-white h-screen flex flex-col">
+    <div className="w-64 bg-gray-900 text-white h-full flex flex-col">
       <div className="p-4 border-b border-gray-700">
         <Button 
           onClick={onNewChat}
-          className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-600"
+          className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-600 flex items-center gap-2"
         >
-          + Nova Conversa
+          <Plus size={16} />
+          Nova Conversa
         </Button>
       </div>
       

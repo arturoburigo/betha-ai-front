@@ -252,7 +252,7 @@ const ChatInterface: React.FC = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-4xl mx-auto py-6">
+            <div className="max-w-4xl mx-auto py-6 pb-4">
               {currentChat?.messages.map((message) => (
                 <ChatMessage key={message.id} message={message} />
               ))}
@@ -260,10 +260,12 @@ const ChatInterface: React.FC = () => {
             </div>
           </div>
 
-          <ChatInput
-            onSendMessage={handleSendMessage}
-            disabled={isLoading}
-          />
+          <div className="mt-auto">
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              disabled={isLoading}
+            />
+          </div>
         </div>
       </div>
     </div>
