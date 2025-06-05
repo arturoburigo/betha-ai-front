@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import Header from './Header';
 import ChatSidebar from './ChatSidebar';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
@@ -230,36 +231,40 @@ const ChatInterface: React.FC = () => {
   const currentChat = getCurrentChat();
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <ChatSidebar
-        chats={chats}
-        activeChat={activeChat}
-        onSelectChat={setActiveChat}
-        onNewChat={handleNewChat}
-      />
+    <div className="flex flex-col h-screen bg-gray-50">
+      <Header />
       
-      <div className="flex-1 flex flex-col">
-        <div className="bg-white border-b p-4 shadow-sm">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-xl font-semibold text-gray-800">
-              {currentChat?.title || 'Chat AI'}
-            </h1>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto py-6">
-            {currentChat?.messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          disabled={isLoading}
+      <div className="flex flex-1 overflow-hidden">
+        <ChatSidebar
+          chats={chats}
+          activeChat={activeChat}
+          onSelectChat={setActiveChat}
+          onNewChat={handleNewChat}
         />
+        
+        <div className="flex-1 flex flex-col">
+          <div className="bg-white border-b p-4 shadow-sm">
+            <div className="max-w-4xl mx-auto">
+              <h1 className="text-xl font-semibold text-gray-800">
+                {currentChat?.title || 'Chat AI'}
+              </h1>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-4xl mx-auto py-6">
+              {currentChat?.messages.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            disabled={isLoading}
+          />
+        </div>
       </div>
     </div>
   );
