@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { MessageSquare, Plus } from 'lucide-react';
+import { MessageSquare, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Chat {
@@ -15,14 +14,23 @@ interface ChatSidebarProps {
   activeChat: string | null;
   onSelectChat: (chatId: string) => void;
   onNewChat: () => void;
+  onDeleteChat: (chatId: string) => void;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({ 
   chats, 
   activeChat, 
   onSelectChat, 
-  onNewChat 
+  onNewChat,
+  onDeleteChat
 }) => {
+  const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
+    e.stopPropagation(); // Evita que o clique no delete selecione o chat
+    if (window.confirm('Tem certeza que deseja excluir esta conversa?')) {
+      onDeleteChat(chatId);
+    }
+  };
+
   return (
     <div className="w-64 bg-gray-900 text-white h-full flex flex-col">
       <div className="p-4 border-b border-gray-700">
@@ -40,13 +48,15 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           {chats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() => onSelectChat(chat.id)}
-              className={`p-3 rounded-lg mb-2 cursor-pointer transition-all duration-200 hover:bg-gray-800 ${
+              className={`group relative p-3 rounded-lg mb-2 cursor-pointer transition-all duration-200 hover:bg-gray-800 ${
                 activeChat === chat.id ? 'bg-gray-700' : ''
               }`}
             >
-              <div className="flex items-center gap-3">
-                <MessageSquare size={16} className="text-gray-400" />
+              <div 
+                className="flex items-center gap-3 pr-8"
+                onClick={() => onSelectChat(chat.id)}
+              >
+                <MessageSquare size={16} className="text-gray-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">
                     {chat.title}
@@ -56,6 +66,15 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   </div>
                 </div>
               </div>
+              
+              {/* Botão de delete */}
+              <button
+                onClick={(e) => handleDeleteChat(e, chat.id)}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-600 hover:text-white transition-all duration-200"
+                title="Excluir conversa"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
           ))}
         </div>

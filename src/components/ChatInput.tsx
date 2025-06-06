@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
   }, [message]);
 
   return (
-    <div className="border-t bg-white p-4">
+    <div className="p-4">
       <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="flex gap-3 items-end">
           <div className="flex-1 relative">
@@ -46,8 +45,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
               onKeyDown={handleKeyDown}
               placeholder="Digite sua mensagem..."
               disabled={disabled}
-              className="w-full min-h-[44px] max-h-32 p-3 pr-12 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full min-h-[44px] max-h-32 p-3 pr-12 bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               rows={1}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'auto' }}
             />
           </div>
           <Button

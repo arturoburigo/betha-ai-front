@@ -119,6 +119,38 @@ const ChatInterface: React.FC = () => {
     return chats.find(chat => chat.id === activeChat);
   };
 
+  const generateChatTitle = (message: string): string => {
+    // Remove palavras muito comuns/genéricas
+    const stopWords = [
+      'o', 'a', 'os', 'as', 'um', 'uma', 'uns', 'umas', 'de', 'da', 'do', 'das', 'dos',
+      'para', 'por', 'com', 'sem', 'em', 'na', 'no', 'nas', 'nos', 'que', 'qual', 'como',
+      'quando', 'onde', 'por que', 'porque', 'e', 'ou', 'mas', 'se', 'então', 'já',
+      'me', 'te', 'se', 'nos', 'vos', 'lhe', 'lhes', 'meu', 'minha', 'seu', 'sua',
+      'olá', 'oi', 'bom', 'dia', 'tarde', 'noite', 'obrigado', 'obrigada', 'por favor',
+      'pode', 'poderia', 'gostaria', 'quero', 'preciso', 'help', 'ajuda', 'ajudar'
+    ];
+    
+    // Limpa e divide a mensagem em palavras
+    const words = message
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '') // Remove pontuação
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !stopWords.includes(word))
+      .slice(0, 4); // Pega no máximo 4 palavras significativas
+    
+    if (words.length === 0) {
+      return 'Nova Conversa';
+    }
+    
+    // Capitaliza a primeira letra de cada palavra
+    const title = words
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    // Limita o tamanho do título
+    return title.length > 30 ? title.substring(0, 30) + '...' : title;
+  };
+
   const generateAssistantResponse = async (userMessage: string): Promise<string> => {
     try {
       console.log('Enviando pergunta para a API:', userMessage);
@@ -154,12 +186,20 @@ const ChatInterface: React.FC = () => {
       isLoading: true,
     };
 
+    // Verifica se é a primeira mensagem do usuário neste chat
+    const currentChat = getCurrentChat();
+    const isFirstUserMessage = currentChat?.messages.filter(m => m.sender === 'user').length === 0;
+    
+    // Gera título baseado na primeira mensagem
+    const newTitle = isFirstUserMessage ? generateChatTitle(content) : currentChat?.title;
+
     // Adiciona mensagem do usuário e loading
     setChats(prevChats => 
       prevChats.map(chat => 
         chat.id === activeChat
           ? {
               ...chat,
+              title: newTitle || chat.title,
               messages: [...chat.messages, userMessage, loadingMessage],
               lastMessage: content,
               timestamp: new Date(),
@@ -229,10 +269,43 @@ const ChatInterface: React.FC = () => {
     setActiveChat(newChat.id);
   };
 
+  const handleDeleteChat = (chatId: string) => {
+    setChats(prevChats => {
+      const filteredChats = prevChats.filter(chat => chat.id !== chatId);
+      
+      // Se o chat ativo foi deletado, selecionar outro chat
+      if (chatId === activeChat) {
+        if (filteredChats.length > 0) {
+          setActiveChat(filteredChats[0].id);
+        } else {
+          // Se não há mais chats, criar um novo
+          const newChat: Chat = {
+            id: Date.now().toString(),
+            title: 'Nova Conversa',
+            lastMessage: 'Conversa iniciada',
+            timestamp: new Date(),
+            messages: [
+              {
+                id: Date.now().toString(),
+                content: 'Olá! Como posso ajudar você hoje?',
+                sender: 'assistant',
+                timestamp: new Date(),
+              }
+            ]
+          };
+          setActiveChat(newChat.id);
+          return [newChat];
+        }
+      }
+      
+      return filteredChats;
+    });
+  };
+
   const currentChat = getCurrentChat();
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-900">
       <Header />
       
       <div className="flex flex-1 overflow-hidden">
@@ -241,19 +314,12 @@ const ChatInterface: React.FC = () => {
           activeChat={activeChat}
           onSelectChat={setActiveChat}
           onNewChat={handleNewChat}
+          onDeleteChat={handleDeleteChat}
         />
         
         <div className="flex-1 flex flex-col">
-          <div className="bg-white border-b p-4 shadow-sm">
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-xl font-semibold text-gray-800">
-                {currentChat?.title || 'Chat AI'}
-              </h1>
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            <div className="max-w-4xl mx-auto py-6 pb-4">
+          <div className="flex-1 overflow-y-auto bg-gray-900">
+            <div className="max-w-6xl mx-auto py-6 pb-4">
               {currentChat?.messages.map((message) => (
                 <ChatMessage key={message.id} message={message} />
               ))}
@@ -261,7 +327,7 @@ const ChatInterface: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-auto">
+          <div className="mt-auto bg-gray-800 border-t border-gray-700">
             <ChatInput
               onSendMessage={handleSendMessage}
               disabled={isLoading}
