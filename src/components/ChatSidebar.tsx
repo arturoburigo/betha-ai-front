@@ -32,7 +32,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   };
 
   return (
-    <div className="w-64 bg-gray-900 text-white h-full flex flex-col">
+    <div className="w-64 bg-gray-900 text-white h-full flex flex-col border-gray-700 border-r">
       <div className="p-4 border-b border-gray-700">
         <Button 
           onClick={onNewChat}
