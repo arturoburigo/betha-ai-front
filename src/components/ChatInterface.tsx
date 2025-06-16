@@ -3,6 +3,7 @@ import Header from './Header';
 import ChatSidebar from './ChatSidebar';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
+import WelcomeMessage from './NewChatModal';
 import { apiService } from '../services/apiService';
 import { formatCodeBlocks } from '../utils/codeFormatter';
 
@@ -28,6 +29,7 @@ const ChatInterface: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Carregar dados do localStorage na inicialização
@@ -36,12 +38,12 @@ const ChatInterface: React.FC = () => {
       try {
         const savedChats = localStorage.getItem(STORAGE_KEY);
         if (savedChats) {
-          const parsedChats = JSON.parse(savedChats);
+          const parsedChats = JSON.parse(savedChats) as (Chat & { timestamp: string; messages: (Message & { timestamp: string })[] })[];
           // Converter strings de timestamp de volta para objetos Date
-          const chatsWithDates = parsedChats.map((chat: any) => ({
+          const chatsWithDates = parsedChats.map((chat) => ({
             ...chat,
             timestamp: new Date(chat.timestamp),
-            messages: chat.messages.map((message: any) => ({
+            messages: chat.messages.map((message) => ({
               ...message,
               timestamp: new Date(message.timestamp)
             }))
@@ -70,6 +72,7 @@ const ChatInterface: React.FC = () => {
           };
           setChats([initialChat]);
           setActiveChat('1');
+          setShowWelcomeMessage(true);
         }
       } catch (error) {
         console.error('Erro ao carregar histórico do chat:', error);
@@ -90,6 +93,7 @@ const ChatInterface: React.FC = () => {
         };
         setChats([initialChat]);
         setActiveChat('1');
+        setShowWelcomeMessage(true);
       }
     };
 
@@ -168,6 +172,11 @@ const ChatInterface: React.FC = () => {
 
   const handleSendMessage = async (content: string) => {
     if (!activeChat || isLoading) return;
+
+    // Hide welcome message when first message is sent
+    if (showWelcomeMessage) {
+      setShowWelcomeMessage(false);
+    }
 
     setIsLoading(true);
     
@@ -267,6 +276,11 @@ const ChatInterface: React.FC = () => {
 
     setChats(prev => [newChat, ...prev]);
     setActiveChat(newChat.id);
+    setShowWelcomeMessage(true);
+  };
+
+  const handleCloseWelcomeMessage = () => {
+    setShowWelcomeMessage(false);
   };
 
   const handleDeleteChat = (chatId: string) => {
@@ -320,6 +334,9 @@ const ChatInterface: React.FC = () => {
         <div className="flex-1 flex flex-col">
           <div className="flex-1 overflow-y-auto bg-gray-900">
             <div className="max-w-6xl mx-auto py-6 pb-4">
+              {showWelcomeMessage && (
+                <WelcomeMessage onClose={handleCloseWelcomeMessage} />
+              )}
               {currentChat?.messages.map((message) => (
                 <ChatMessage key={message.id} message={message} />
               ))}

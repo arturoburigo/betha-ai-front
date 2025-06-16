@@ -26,9 +26,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 }) => {
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation(); // Evita que o clique no delete selecione o chat
-    if (window.confirm('Tem certeza que deseja excluir esta conversa?')) {
-      onDeleteChat(chatId);
-    }
+    onDeleteChat(chatId);
   };
 
   return (
@@ -78,6 +76,21 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             </div>
           ))}
         </div>
+      </div>
+      
+      <div className="p-4 border-t border-gray-700 text-xs text-gray-400">
+        <div className="mb-1">
+          Desenvolvido por:{' '}
+          <a 
+            href="https://www.linkedin.com/in/arturoburigo/?locale=pt_BR" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:text-blue-300"
+          >
+            Arturo Burigo
+          </a>
+        </div>
+        <div>Versão: 1.0.0</div>
       </div>
     </div>
   );
